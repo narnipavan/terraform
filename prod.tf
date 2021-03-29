@@ -1,3 +1,22 @@
+variable "whitelist" {   
+   type = list(string)
+}        
+variable "image_id" { 
+   type = string
+}            
+variable "instance_type" {
+   type = string
+}       
+variable "web_desired_capacity" {
+   type = number
+}
+variable "web_max_size" {
+   type = number
+}         
+variable "web_min_size" {
+   type = number
+}         
+
 provider "aws" {
   profile = "default"
   region  = "us-east-1"
@@ -18,7 +37,7 @@ resource "aws_default_subnet" "default_az1" {
 }
 
 resource "aws_default_subnet" "default_az2" {
-  availability_zone = "us-west-1c"
+  availability_zone = "us-east-1c"
   tags = {
     "Teraform" : "true"
   }
@@ -32,21 +51,21 @@ resource "aws_security_group" "prod_web"{
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.whitelist
  }
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.whitelist
 
   }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  
+    cidr_blocks = var.whitelist  
 
    }
 
@@ -60,7 +79,7 @@ resource "aws_instance" "prod_web"{
   count = 2
 
   ami           = "ami-045805cfa04cb5a27"
-  instance_type = "t2.nano"
+  instance_type = var.instance_type
 
   vpc_security_group_ids = [
     aws_security_group.prod_web.id
@@ -99,3 +118,4 @@ resource "aws_elb" "prod_web" {
 
   }
 }
+
